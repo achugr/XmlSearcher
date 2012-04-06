@@ -75,6 +75,8 @@ public class PhonebookManager {
         return false;
     }
 
+
+//    TODO xPath -expression is awful
     /**
      * Searching in phone book file
      * @param contactFieldToSearch in which you will search (like ContactField.NAME)
@@ -110,6 +112,7 @@ public class PhonebookManager {
 //            go on all relevant ids
             for (Integer id : ids) {
 //                open file
+//                TODO open file in cycle - it's bad practice xDD fix this!
                 InputSource inputSource = new InputSource(new FileReader(file));
 //                expression for extract contact with needed id
                 NodeList nodeList = (NodeList) xPath.evaluate("descendant-or-self::contact[@id='" + id + "']/*/text()", inputSource, XPathConstants.NODESET);
