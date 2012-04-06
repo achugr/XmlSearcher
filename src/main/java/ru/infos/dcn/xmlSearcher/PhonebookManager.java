@@ -86,46 +86,6 @@ public class PhonebookManager {
      * @throws XPathExpressionException
      */
     public List<Contact> search(ContactField contactFieldToSearch, String valueToSearch) throws FileNotFoundException, XPathExpressionException {
-//        extract string valueToSearch of enum field
-        String fieldToSearch = contactFieldToSearch.value();
-        XPath xPath = XPathFactory.newInstance().newXPath();
-//        ids of relevant contacts
-        List<Integer> ids = new LinkedList<Integer>();
-        {
-//            open file to read
-            InputSource inputSource = new InputSource(new FileReader(file));
-//            compile xpath
-//            xpath: extract ids of contacts, that contains valueToSearch in fieldToSearch
-            XPathExpression findContactIds = xPath.compile("descendant-or-self::contact/" + fieldToSearch + "[contains(text(),'" + valueToSearch + "')]/..");
-//            evaluate expression, became NodeList
-            NodeList nodeList = (NodeList) findContactIds.evaluate(inputSource, XPathConstants.NODESET);
-//            go on all nodes in nodeList
-            for (int i = 0; i < nodeList.getLength(); i++) {
-//                extract id attribute from node and add to relevant ids list
-                ids.add(Integer.parseInt(nodeList.item(i).getAttributes().item(0).getNodeValue()));
-            }
-        }
-//        list for store relevant contacts
-        List<Contact> relevantContacts = new LinkedList<Contact>();
-        {
-           Contact contact;
-//            go on all relevant ids
-            for (Integer id : ids) {
-//                open file
-//                TODO open file in cycle - it's bad practice xDD fix this!
-                InputSource inputSource = new InputSource(new FileReader(file));
-//                expression for extract contact with needed id
-                NodeList nodeList = (NodeList) xPath.evaluate("descendant-or-self::contact[@id='" + id + "']/*/text()", inputSource, XPathConstants.NODESET);
-                contact = new Contact();
-//                fill contact
-                contact.setName(nodeList.item(0).getNodeValue());
-                contact.setSurname(nodeList.item(1).getNodeValue());
-                contact.setPhoneNumber(nodeList.item(2).getNodeValue());
-//                add contact to relevant contacts
-                relevantContacts.add(contact);
-            }
-        }
-        return relevantContacts;
     }
 
     /**
@@ -196,29 +156,12 @@ public class PhonebookManager {
      * @throws FileNotFoundException
      * @throws XPathExpressionException
      */
-    private int lastContactId() throws FileNotFoundException, XPathExpressionException {
+     int lastContactId() throws FileNotFoundException, XPathExpressionException {
         XPath xPath = XPathFactory.newInstance().newXPath();
         InputSource inputSource = new InputSource(new FileReader(file));
 //        evaluate expression for extract last contact id attribute
         String id = xPath.evaluate("//contact[last()]/attribute::id", inputSource);
         return Integer.parseInt(id);
-    }
-
-    public static void main(String[] args) throws JAXBException, FilterFullException, FileNotFoundException, XPathExpressionException {
-        PhonebookManager phonebookManager = new PhonebookManager("test.xml");
-        phonebookManager.fillBloomFilter(12000);
-        {
-            long start = System.currentTimeMillis();
-            System.out.println(phonebookManager.doesExistInPhonebook(ContactField.NAME, "1146927241", true));
-            long stop = System.currentTimeMillis();
-            System.out.println("time in millis: " + (stop-start));
-        }
-        {
-            long start = System.currentTimeMillis();
-            System.out.println(phonebookManager.doesExistInPhonebook(ContactField.NAME, "1146927241", false));
-            long stop = System.currentTimeMillis();
-            System.out.println("time in millis: " + (stop-start));
-        }
     }
 
     /**
@@ -256,6 +199,24 @@ public class PhonebookManager {
         } else {
             List<Contact> contacts = this.search(contactField, value);
             return !contacts.isEmpty();
+        }
+    }
+
+
+    public static void main(String[] args) throws JAXBException, FilterFullException, FileNotFoundException, XPathExpressionException {
+        PhonebookManager phonebookManager = new PhonebookManager("test.xml");
+        phonebookManager.fillBloomFilter(12000);
+        {
+            long start = System.currentTimeMillis();
+            System.out.println(phonebookManager.doesExistInPhonebook(ContactField.NAME, "1146927241", true));
+            long stop = System.currentTimeMillis();
+            System.out.println("time in millis: " + (stop-start));
+        }
+        {
+            long start = System.currentTimeMillis();
+            System.out.println(phonebookManager.doesExistInPhonebook(ContactField.NAME, "1146927241", false));
+            long stop = System.currentTimeMillis();
+            System.out.println("time in millis: " + (stop-start));
         }
     }
 
